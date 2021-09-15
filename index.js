@@ -116,21 +116,18 @@ const rawArray = (dataPlays) => {
     }
 }
 
-let job = new CronJob('*/5 * * * * *', () => {
+let job = new CronJob('1 * * * *', () => {
     console.log('cron task working!');
-    ArrayData = [new Date().getSeconds()]
-    //alert('cron task working!');
+    scrape();
 }, null, true, 'America/Los_Angeles');
 
 job.start() 
 
 // script para ejecutar el evento cada 24 horas
-cron.schedule('1 55 10 * * *', () => {
-    console.log('cron');
-    //scrape();
-    
-     
-})
+// cron.schedule('1 55 10 * * *', () => {
+//     console.log('cron');
+//     scrape(); 
+// })
 
 //ruta api con información
 app.get('/api/v1/schedule', (req, res) => {    
