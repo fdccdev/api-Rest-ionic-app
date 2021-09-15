@@ -8,6 +8,8 @@ const pup = require('puppeteer');
 
 const PORT = process.env.PORT || 8080;
 
+process.env.tz = "America/Los_Angeles";
+
 global.ArrayData = [];
 
 global.canal = [];
@@ -115,7 +117,7 @@ const rawArray = (dataPlays) => {
 
 
 // script para ejecutar el evento cada 24 horas
-cron.schedule('1 40 17 * * *', () => {
+cron.schedule('1 45 10 * * *', () => {
     console.log('cron');
     scrape();    
 })
