@@ -116,12 +116,11 @@ const rawArray = (dataPlays) => {
     }
 }
 
-let job = new CronJob('1 * * * *', () => {
+let job = new CronJob('*/1 * * * *', () => {
     console.log('cron task working!');
     scrape();
 }, null, true, 'America/Los_Angeles');
-
-job.start() 
+job.start();
 
 // script para ejecutar el evento cada 24 horas
 // cron.schedule('1 55 10 * * *', () => {
