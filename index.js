@@ -8,14 +8,11 @@ const pup = require('puppeteer');
 
 const PORT = process.env.PORT || 8080;
 
+const CronJob = require('cron').CronJob;
+
 process.env.tz = "America/Los_Angeles";
 
-global.ArrayData = [];
-
-global.canal = [];
-canal.push([]);
-
-global.dataPlays = [
+global.ArrayData = [
     [],
     [
     "Young Boys\nManchester Utd.",
@@ -79,6 +76,11 @@ global.dataPlays = [
     ],
 ];
 
+global.canal = [];
+canal.push([]);
+
+global.dataPlays = [];
+
 
 //script para scrapear la web
 async function scrape() {
@@ -101,6 +103,7 @@ async function scrape() {
 
 //transformando la data en array de objetos y formateando la información
 const rawArray = (dataPlays) => {
+    ArrayData = [];
     for(i=1;i<dataPlays.length;i++){
         if(dataPlays[i].length == 0){
             break;
@@ -111,15 +114,22 @@ const rawArray = (dataPlays) => {
     for(i=1; i< canal.length; i++){
         ArrayData.push({equipos:dataPlays[i][0].replace(/\r?\n|\r/g, ' vs ').trim(), hora: canal[i][0].trim(), competicion: canal[i][1].trim(), canal: canal[i][2].trim() })
     }
-
-    
 }
 
+let job = new CronJob('*/5 * * * * *', () => {
+    console.log('cron task working!');
+    ArrayData = [new Date().getSeconds()]
+    //alert('cron task working!');
+}, null, true, 'America/Los_Angeles');
+
+job.start() 
 
 // script para ejecutar el evento cada 24 horas
 cron.schedule('1 55 10 * * *', () => {
     console.log('cron');
-    scrape();    
+    //scrape();
+    
+     
 })
 
 //ruta api con información
@@ -127,7 +137,7 @@ app.get('/api/v1/schedule', (req, res) => {
     res.json(ArrayData)
 })
 
-app.get('/', (req, res)=>{
+app.get('/', (req, res)=>{      
     res.sendFile(__dirname + '/statusPage.html')
 })
 
