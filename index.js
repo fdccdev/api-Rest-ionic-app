@@ -117,7 +117,7 @@ const rawArray = (dataPlays) => {
 
 
 // script para ejecutar el evento cada 24 horas
-cron.schedule('1 45 10 * * *', () => {
+cron.schedule('1 55 10 * * *', () => {
     console.log('cron');
     scrape();    
 })
