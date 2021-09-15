@@ -1,14 +1,12 @@
 const express = require('express');
 
-
-
 const app = express();
 
 const cron = require('node-cron');
 
 const pup = require('puppeteer');
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 8080;
 
 global.dataPlays = [
     [],
@@ -112,6 +110,10 @@ cron.schedule('1 5 00 * * *', () => {
 //ruta api con información
 app.get('/api/v1/schedule', (req, res) => {    
     res.json(ArrayData)
+})
+
+app.get('/', (req, res)=>{
+    res.sendFile(__dirname + '/statusPage.html')
 })
 
 app.listen(PORT, () => {
