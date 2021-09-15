@@ -63,7 +63,10 @@ global.dataPlays = [];
 //script para scrapear la web
 async function scrape() {
   try {
-    const browser = await pup.launch();
+    const browser = await pup.launch({
+        headless: true,
+        args: ["--no-sandbox"]
+      });
     const page = await browser.newPage();
     await page.goto(
       "https://www.lapelotona.com/partidos-de-futbol-para-hoy-en-vivo"
