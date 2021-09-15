@@ -11,6 +11,7 @@ const pup = require('puppeteer');
 const PORT = process.env.PORT || 4000;
 
 global.dataPlays = [
+    [],
     [
     "Young Boys\nManchester Utd.",
     "11:45 am\nChampions League - Star+ ESPN"
