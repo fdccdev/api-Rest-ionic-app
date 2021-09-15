@@ -8,6 +8,11 @@ const pup = require('puppeteer');
 
 const PORT = process.env.PORT || 8080;
 
+global.ArrayData = [];
+
+global.canal = [];
+canal.push([]);
+
 global.dataPlays = [
     [],
     [
@@ -83,28 +88,36 @@ async function scrape() {
         return Array.from(rows, row => {
             const columns = row.querySelectorAll('td');
             return Array.from(columns, column => column.innerText);
-        })
+        });
     });
     dataPlays = data;
-
+    rawArray(dataPlays);
+    console.log('api has loaded!')
     await browser.close();
 }
 
 
-//transformando la data en array de objetos
-let ArrayData = [];
-for(i=1;i<dataPlays.length;i++){
-    if(dataPlays[i].length == 0){
-        break;
+//transformando la data en array de objetos y formateando la información
+const rawArray = (dataPlays) => {
+    for(i=1;i<dataPlays.length;i++){
+        if(dataPlays[i].length == 0){
+            break;
+        };
+        canal.push(dataPlays[i][1].replace(/\r?\n|\r/g, ' - ').split('-'))                
     }
-    ArrayData.push({equipos:dataPlays[i][0].replace(/\r?\n|\r/g, ' vs '), hora: dataPlays[i][1].replace(/\r?\n|\r/g, ' *** ')})
+
+    for(i=1; i< canal.length; i++){
+        ArrayData.push({equipos:dataPlays[i][0].replace(/\r?\n|\r/g, ' vs ').trim(), hora: canal[i][0].trim(), competicion: canal[i][1].trim(), canal: canal[i][2].trim() })
+    }
+
     
 }
 
+
 // script para ejecutar el evento cada 24 horas
-cron.schedule('1 5 00 * * *', () => {
+cron.schedule('1 5 12 * * *', () => {
     console.log('cron');
-    scrape();
+    scrape();    
 })
 
 //ruta api con información
