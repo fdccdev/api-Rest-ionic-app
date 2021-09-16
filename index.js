@@ -2,8 +2,6 @@ const express = require("express");
 
 const app = express();
 
-const cron = require("node-cron");
-
 const pup = require("puppeteer");
 
 const PORT = process.env.PORT || 8080;
@@ -122,12 +120,6 @@ let job = new CronJob(
   "America/Los_Angeles"
 );
 job.start();
-
-// script para ejecutar el evento cada 24 horas
-// cron.schedule('1 55 10 * * *', () => {
-//     console.log('cron');
-//     scrape();
-// })
 
 //ruta api con información
 app.get("/api/v1/schedule", (req, res) => {
