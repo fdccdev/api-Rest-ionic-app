@@ -24,6 +24,8 @@ const url = "https://www.lapelotona.com/partidos-de-futbol-para-hoy-en-vivo/";
 const main = () => {
   const rawArray = async () => {
     try {
+
+      arrayData = [];
       const dataRaw = await getDataRaw(url);
       const $ = cheerio.load(dataRaw);
 
