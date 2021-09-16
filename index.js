@@ -2,7 +2,7 @@ const express = require("express");
 
 const app = express();
 
-const scraper = require('table-scraper');
+const cron = require("node-cron");
 
 const pup = require("puppeteer");
 
@@ -13,6 +13,7 @@ const CronJob = require("cron").CronJob;
 process.env.tz = "America/Los_Angeles";
 
 global.ArrayData = [
+  [],
   ["Young Boys\nManchester Utd.", "11:45 am\nChampions League - Star+ ESPN"],
   [
     "Sevilla FC\nRed Bull Salzburg",
@@ -61,19 +62,38 @@ global.dataPlays = [];
 
 //script para scrapear la web
 async function scrape() {
-
-    scraper.get("https://www.lapelotona.com/partidos-de-futbol-para-hoy-en-vivo")
-        .then(function(data){
-            ArrayData = data[0];
-        })
-
-  
+  try {
+    const browser = await pup.launch({
+        headless: true,
+        'args' : [
+            '--no-sandbox',
+            '--disable-setuid-sandbox'
+          ]
+      });
+    const page = await browser.newPage();
+    await page.goto(
+      "https://www.lapelotona.com/partidos-de-futbol-para-hoy-en-vivo"
+    );
+    const data = await page.evaluate(() => {
+      const rows = document.querySelectorAll("table tr");
+      return Array.from(rows, (row) => {
+        const columns = row.querySelectorAll("td");
+        return Array.from(columns, (column) => column.innerText);
+      });
+    });
+    dataPlays = data;
+    rawArray(dataPlays);
+    console.log("api has loaded!");
+    await browser.close();
+  } catch (rejectedValue) {
+    console.log(rejectedValue);
+  }
 }
 
 //transformando la data en array de objetos y formateando la información
 const rawArray = (dataPlays) => {
   ArrayData = [];
-  //console.log(dataPlays);
+  console.log(dataPlays);
   for (i = 1; i < dataPlays.length; i++) {
     if (dataPlays[i] == "") {
       break;
