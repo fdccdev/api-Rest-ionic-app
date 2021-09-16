@@ -48,6 +48,10 @@ const main = () => {
     }
   };
 
+  app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/statusPage.html");
+  });
+
   app.get("/api/v1/schedule", (req, res) => {
     res.json(arrayData);
   });
@@ -57,7 +61,7 @@ const main = () => {
   });
 
   let job = new CronJob(
-    "*/30 * * * * *",
+    " 50 10 * * *",
     () => {
       console.log("cron task working!");
       rawArray();
