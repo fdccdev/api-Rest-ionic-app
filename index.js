@@ -2,7 +2,11 @@ const express = require("express");
 
 const app = express();
 
-const pup = require("puppeteer");
+const chrome = require('chrome-aws-lambda');
+
+const play = require('playwright');
+
+const pup = require("puppeteer-core");
 
 const PORT = process.env.PORT || 8080;
 
@@ -60,29 +64,27 @@ global.dataPlays = [];
 
 //script para scrapear la web
 async function scrape() {
+    console.log(chrome.headless)
   try {
-    const browser = await pup.launch({
-        headless: true,
-        'args' : [
-            '--no-sandbox',
-            '--disable-setuid-sandbox'
-          ]
-      });
-    const page = await browser.newPage();
-    await page.goto(
-      "https://www.lapelotona.com/partidos-de-futbol-para-hoy-en-vivo"
-    );
-    const data = await page.evaluate(() => {
-      const rows = document.querySelectorAll("table tr");
-      return Array.from(rows, (row) => {
-        const columns = row.querySelectorAll("td");
-        return Array.from(columns, (column) => column.innerText);
-      });
-    });
-    dataPlays = data;
-    rawArray(dataPlays);
-    console.log("api has loaded!");
-    await browser.close();
+    for(const browserType of ['chromium', 'firefox', 'webkit']){
+        const browser = await play[browserType].launch();
+        const ctx = await browser.newContext();
+        const page = await ctx.newPage();
+        await page.goto(
+          "https://www.lapelotona.com/partidos-de-futbol-para-hoy-en-vivo"
+        );
+        const data = await page.evaluate(() => {
+          const rows = document.querySelectorAll("table tr");
+          return Array.from(rows, (row) => {
+            const columns = row.querySelectorAll("td");
+            return Array.from(columns, (column) => column.innerText);
+          });
+        });
+        dataPlays = data;
+        rawArray(dataPlays);
+        console.log("api has loaded!");
+        await browser.close();
+    }
   } catch (rejectedValue) {
     console.log(rejectedValue);
   }
@@ -91,7 +93,7 @@ async function scrape() {
 //transformando la data en array de objetos y formateando la información
 const rawArray = (dataPlays) => {
   ArrayData = [];
-  console.log(dataPlays);
+  //console.log(dataPlays);
   for (i = 1; i < dataPlays.length; i++) {
     if (dataPlays[i] == "") {
       break;
