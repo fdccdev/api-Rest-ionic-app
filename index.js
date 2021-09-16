@@ -21,27 +21,31 @@ const getDataRaw = (url) => {
 
 const url = "https://www.lapelotona.com/partidos-de-futbol-para-hoy-en-vivo/";
 
-const main = async () => {
+const main = () => {
   const rawArray = async () => {
-    const dataRaw = await getDataRaw(url);
-    const $ = cheerio.load(dataRaw);
+    try {
+      const dataRaw = await getDataRaw(url);
+      const $ = cheerio.load(dataRaw);
 
-    $("#partidos-hoy > tbody > tr ")
-      .toArray()
-      .map((item) => {
-        arrayData.push(
-          $(item)
-            .text()
-            .replace("?<=[a-z])(?=[A-Z0-9]")
-            .replace(/([a-z])([A-Z])/g, "$1 $2")
-            .trim()
-        );
+      $("#partidos-hoy > tbody > tr ")
+        .toArray()
+        .map((item) => {
+          arrayData.push(
+            $(item)
+              .text()
+              .replace("?<=[a-z])(?=[A-Z0-9]")
+              .replace(/([a-z])([A-Z])/g, "$1 $2")
+              .trim()
+          );
+        });
+
+      arrayData.map((item) => {
+        item.replace(/\n/g, "").replace(/\t/g, "");
       });
-
-    arrayData.map((item) => {
-      item.replace(/\n/g, "").replace(/\t/g, "");
-    });
-    console.log('Api loaded !!!')
+      console.log("Api loaded !!!");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   app.get("/api/v1/schedule", (req, res) => {
