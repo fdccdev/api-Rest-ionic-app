@@ -3,7 +3,11 @@ const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 const cheerio = require("cheerio");
 
+const cors = require('cors');
+
 const app = express();
+
+app.use(cors());
 
 const PORT = process.env.PORT || 8080;
 
