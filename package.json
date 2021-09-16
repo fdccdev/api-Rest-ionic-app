@@ -13,13 +13,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cheerio": "*",
     "cron": "^1.8.2",
     "express": "^4.17.1",
-    "puppeteer": "^10.2.0"
-  },
-  "devDependencies": {
-    "chrome-aws-lambda": "^10.1.0",
-    "playwright": "^1.14.1",
-    "puppeteer-core": "^10.2.0"
+    "node-fetch": "^3.0.0"
   }
 }

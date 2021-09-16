@@ -1,137 +1,68 @@
 const express = require("express");
+const fetch = (...args) =>
+  import("node-fetch").then(({ default: fetch }) => fetch(...args));
+const cheerio = require("cheerio");
 
 const app = express();
-
-const chrome = require('chrome-aws-lambda');
-
-const play = require('playwright');
-
-const pup = require("puppeteer-core");
 
 const PORT = process.env.PORT || 8080;
 
 const CronJob = require("cron").CronJob;
 
-process.env.tz = "America/Los_Angeles";
+global.arrayData = [];
 
-global.ArrayData = [
-  [],
-  ["Young Boys\nManchester Utd.", "11:45 am\nChampions League - Star+ ESPN"],
-  [
-    "Sevilla FC\nRed Bull Salzburg",
-    "11:45 am\nChampions League - Star+ FOX Sports",
-  ],
-  [
-    "Talleres Córdoba\nPlatense",
-    "12:15 pm\nPrimera División Argentina - Fanatiz TyC Sports Internacional",
-  ],
-  ["Dynamo Kyiv\nBenfica", "2:00 pm\nChampions League - FOX Sports 3 Star+"],
-  ["Lille\nVfL Wolfsburg", "2:00 pm\nChampions League - Star+ FOX Sports 2"],
-  ["Villarreal\nAtalanta", "2:00 pm\nChampions League - Star+ ESPN 3"],
-  ["FC Barcelona\nFC Bayern", "2:00 pm\nChampions League - Star+ ESPN"],
-  [
-    "Chelsea\nZenit St. Petersburg",
-    "2:00 pm\nChampions League - Star+ FOX Sports",
-  ],
-  ["Malmö FF\nJuventus", "2:00 pm\nChampions League - Star+ ESPN 2 Andino"],
-  [
-    "Arsenal Sarandí\nCA Colón",
-    "2:30 pm\nPrimera División Argentina - Fanatiz",
-  ],
-  [
-    "Central Córdoba\nAtlético Tucumán",
-    "4:45 pm\nPrimera División Argentina - Fanatiz TyC Sports Internacional",
-  ],
-  [
-    "Boyacá Chicó\nAtlético FC",
-    "6:00 pm\nTorneo BetPlay DIMAYOR - Win Sports+",
-  ],
-  ["Toronto FC\nInter Miami CF", "6:30 pm\nMLS - Star+"],
-  [
-    "Boca Juniors\nDefensa y Justicia",
-    "7:00 pm\nPrimera División Argentina - ESPN Fanatiz",
-  ],
-  [
-    "Fortaleza\nBogotá",
-    "8:00 pm\nTorneo BetPlay DIMAYOR - Win Sports+ Win Sports",
-  ],
-];
-
-global.canal = [];
-canal.push([]);
-
-global.dataPlays = [];
-
-//script para scrapear la web
-async function scrape() {
-    console.log(chrome.headless)
-  try {
-    for(const browserType of ['chromium', 'firefox', 'webkit']){
-        const browser = await play[browserType].launch();
-        const ctx = await browser.newContext();
-        const page = await ctx.newPage();
-        await page.goto(
-          "https://www.lapelotona.com/partidos-de-futbol-para-hoy-en-vivo"
-        );
-        const data = await page.evaluate(() => {
-          const rows = document.querySelectorAll("table tr");
-          return Array.from(rows, (row) => {
-            const columns = row.querySelectorAll("td");
-            return Array.from(columns, (column) => column.innerText);
-          });
-        });
-        dataPlays = data;
-        rawArray(dataPlays);
-        console.log("api has loaded!");
-        await browser.close();
-    }
-  } catch (rejectedValue) {
-    console.log(rejectedValue);
-  }
-}
-
-//transformando la data en array de objetos y formateando la información
-const rawArray = (dataPlays) => {
-  ArrayData = [];
-  //console.log(dataPlays);
-  for (i = 1; i < dataPlays.length; i++) {
-    if (dataPlays[i] == "") {
-      break;
-    }
-    canal.push(dataPlays[i][1].replace(/\r?\n|\r/g, " - ").split("-"));    
-  }
-
-  for (i = 1; i < canal.length; i++) {
-    ArrayData.push({
-      equipos: dataPlays[i][0].replace(/\r?\n|\r/g, " vs ").trim(),
-      hora: canal[i][0].trim(),
-      competicion: canal[i][1].trim(),
-      canal: canal[i][2].trim(),
+const getDataRaw = (url) => {
+  return fetch(url)
+    .then((response) => response.text())
+    .then((data) => {
+      return data;
     });
-  }
 };
 
-let job = new CronJob(
-  "*/1 * * * *",
-  () => {
-    console.log("cron task working!");
-    scrape();
-  },
-  null,
-  true,
-  "America/Los_Angeles"
-);
-job.start();
+const url = "https://www.lapelotona.com/partidos-de-futbol-para-hoy-en-vivo/";
 
-//ruta api con información
-app.get("/api/v1/schedule", (req, res) => {
-  res.json(ArrayData);
-});
+const main = async () => {
+  const rawArray = async () => {
+    const dataRaw = await getDataRaw(url);
+    const $ = cheerio.load(dataRaw);
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/statusPage.html");
-});
+    $("#partidos-hoy > tbody > tr ")
+      .toArray()
+      .map((item) => {
+        arrayData.push(
+          $(item)
+            .text()
+            .replace("?<=[a-z])(?=[A-Z0-9]")
+            .replace(/([a-z])([A-Z])/g, "$1 $2")
+            .trim()
+        );
+      });
 
-app.listen(PORT, () => {
-  console.log("server is running in port:", PORT);
-});
+    arrayData.map((item) => {
+      item.replace(/\n/g, "").replace(/\t/g, "");
+    });
+    console.log('Api loaded !!!')
+  };
+
+  app.get("/api/v1/schedule", (req, res) => {
+    res.json(arrayData);
+  });
+
+  app.listen(PORT, () => {
+    console.log("server is running in port:", PORT);
+  });
+
+  let job = new CronJob(
+    "*/1 * * * *",
+    () => {
+      console.log("cron task working!");
+      rawArray();
+    },
+    null,
+    true,
+    "America/Los_Angeles"
+  );
+  job.start();
+};
+
+main();
