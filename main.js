@@ -91,14 +91,14 @@ const main = () => {
   });
 
   let job = new CronJob(
-    "42 8 * * *",
+    "49 10 * * *",
     () => {
       console.log("cron task working!");
       rawArray();
     },
     null,
     true,
-    "America/Los_Angeles"
+    "America/Bogota"
   );
   job.start();
 };
