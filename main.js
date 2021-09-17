@@ -91,7 +91,7 @@ const main = () => {
   });
 
   let job = new CronJob(
-    "42 10 * * *",
+    "42 8 * * *",
     () => {
       console.log("cron task working!");
       rawArray();
