@@ -54,6 +54,7 @@ const main = () => {
     try {
 
       arrayData = [];
+      const arr = [];
       const dataRaw = await getDataRaw(url);
       const $ = cheerio.load(dataRaw);
 
@@ -72,6 +73,23 @@ const main = () => {
       arrayData.map((item) => {
         item.replace(/\n/g, "").replace(/\t/g, "");
       });
+
+      arrayData.map((item) => {
+        arr.push([
+          { equipos: item.split(/([0-9]+:[0-9]+ .*)/)[0] },
+          { hora: item.split(/( \d+:[0-9][0-9] [pm|am].) /)[1].trim() },
+          {
+            competicion: item
+              .split(/( [pm|am]. )/)[2]
+              .split("-")[0]
+              .trim(),
+          },
+          { canal: item.split("-")[1].trim() },
+        ]);
+      });
+
+      arrayData = arr;
+
       console.log("Api loaded !!!");
     } catch (err) {
       console.log(err);
@@ -91,7 +109,7 @@ const main = () => {
   });
 
   let job = new CronJob(
-    "15 22 * * *",
+    "35 7 * * *",
     () => {
       console.log("cron task working!");
       rawArray();
